@@ -1,0 +1,20 @@
+Source: bloomd
+Section: utils
+Priority: optional
+Maintainer: Ori Livneh <ori@wikimedia.org>
+Build-Depends: debhelper (>= 9), dh-systemd, scons, check, libev-dev
+Standards-Version: 3.9.5
+Homepage: http://armon.github.io/bloomd/
+#Vcs-Git: git://anonscm.debian.org/collab-maint/bloomd.git
+#Vcs-Browser: http://anonscm.debian.org/?p=collab-maint/bloomd.git;a=summary
+
+Package: bloomd
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, adduser
+Description: C network daemon for bloom filters
+ Bloomd is a high-performance C server which is used to
+ expose bloom filters and operations over them to networked
+ clients.
+ .
+ It uses a simple ASCII protocol which is human readable,
+ and similar to memcached.

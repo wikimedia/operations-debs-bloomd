@@ -1,0 +1,10 @@
+description "C network daemon for bloom filters"
+
+start on (local-filesystems and net-device-up IFACE!=lo)
+stop on [!12345]
+
+limit nofile 32768 32768
+
+setuid bloomd
+
+exec /usr/bin/bloomd -f /etc/bloomd/bloomd.conf

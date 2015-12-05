@@ -1,0 +1,9 @@
+[Unit]
+Description=C network daemon for bloom filters
+
+[Service]
+User=bloomd
+ExecStart=/usr/bin/bloomd -f /etc/bloomd/bloomd.conf
+
+[Install]
+WantedBy=multi-user.target

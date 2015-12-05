@@ -1,0 +1,2 @@
+bloomd /usr/bin
+debian/bloomd.conf /etc/bloomd

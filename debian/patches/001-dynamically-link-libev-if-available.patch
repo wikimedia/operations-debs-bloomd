@@ -1,0 +1,51 @@
+--- a/SConstruct
++++ b/SConstruct
+@@ -16,9 +16,16 @@
+ envinih = Environment(CPATH = ['deps/inih/'], CFLAGS="-O2")
+ inih = envinih.Library('inih', Glob("deps/inih/*.c"))
+ 
+-envbloomd_with_err = Environment(CCFLAGS = '-std=c99 -D_GNU_SOURCE -Wall -Wextra -Werror -O2 -pthread -Isrc/bloomd/ -Ideps/inih/ -Ideps/libev/ -Isrc/libbloom/')
+-envbloomd_without_unused_err = Environment(CCFLAGS = '-std=c99 -D_GNU_SOURCE -Wall -Wextra -Wno-unused-function -Wno-unused-result -Werror -O2 -pthread -Isrc/bloomd/ -Ideps/inih/ -Ideps/libev/ -Isrc/libbloom/')
+-envbloomd_without_err = Environment(CCFLAGS = '-std=c99 -D_GNU_SOURCE -O2 -pthread -Isrc/bloomd/ -Ideps/inih/ -Ideps/libev/ -Isrc/libbloom/')
++ccflags = '-std=c99 -D_GNU_SOURCE -O2 -pthread -Isrc/bloomd/ -Ideps/inih/ -Isrc/libbloom/'
++
++conf_libev = Environment().Configure()
++libev = conf_libev.CheckLibWithHeader('ev', 'ev.h', 'c', autoadd=0)
++if not libev:
++   ccflags += ' -Ideps/libev/ -D_DEPS_LIBEV'
++
++envbloomd_with_err = Environment(CCFLAGS = ccflags + ' -Wall -Wextra -Werror')
++envbloomd_without_unused_err = Environment(CCFLAGS = ccflags + ' -Wall -Wextra -Wno-unused-function -Wno-unused-result -Werror')
++envbloomd_without_err = Environment(CCFLAGS = ccflags)
+ 
+ objs =  envbloomd_with_err.Object('src/bloomd/config', 'src/bloomd/config.c') + \
+         envbloomd_without_err.Object('src/bloomd/networking', 'src/bloomd/networking.c') + \
+@@ -30,6 +37,8 @@
+         envbloomd_with_err.Object('src/bloomd/art', 'src/bloomd/art.c')
+ 
+ bloom_libs = ["pthread", bloom, murmur, inih, spooky, "m"]
++if libev:
++   bloom_libs.append("ev")
+ if plat == 'Linux':
+    bloom_libs.append("rt")
+ 
+--- a/src/bloomd/networking.c
++++ b/src/bloomd/networking.c
+@@ -11,8 +11,17 @@
+ #ifdef __MACH__
+ #define EV_USE_KQUEUE 1
+ #endif
++#ifdef _DEPS_LIBEV
+ #include "ev.c"
++#else
++#include <ev.h>
++#endif
+ 
++#include <stdio.h>
++#include <stdlib.h>
++#include <errno.h>
++#include <assert.h>
++#include <string.h>
+ #include <arpa/inet.h>
+ #include <netinet/in.h>
+ #include <pthread.h>
